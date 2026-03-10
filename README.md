@@ -44,3 +44,39 @@ Environmental factors such as **temperature** and **oxygen concentration** modif
 ---
 
 ## Project Structure
+src/
+└── BioReactorSim/
+├── BioreactorApp.java
+├── BioreactorGUI.java
+├── BioreactorModel.java
+├── SimulationEngine.java
+└── GraphPanel.java
+
+
+---
+
+## How to Run
+
+1. Clone the repository
+https://github.com/saryael/bioreactor-digital-twin-simulator.git
+
+2. Open the project in an IDE (Eclipse, IntelliJ, or VS Code)
+
+3. Run:
+
+BioreactorApp.java
+
+---
+
+## Future Improvements
+
+- Animated bioreactor visualization
+- Fed-batch fermentation models
+- Multiple fermentation graphs
+- Exportable simulation data
+
+---
+
+## License
+
+This project is licensed under the MIT License.
