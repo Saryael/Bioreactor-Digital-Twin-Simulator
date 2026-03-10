@@ -45,26 +45,24 @@ Environmental factors such as **temperature** and **oxygen concentration** modif
 
 ## Project Structure
 src/
-└── BioReactorSim/
+├── BioReactorSim/
 ├── BioreactorApp.java
 ├── BioreactorGUI.java
 ├── BioreactorModel.java
 ├── SimulationEngine.java
-└── GraphPanel.java
+├── GraphPanel.java
 
 
 ---
 
 ## How to Run
 
-1. Clone the repository
+1. Copy the repository:
 https://github.com/saryael/bioreactor-digital-twin-simulator.git
 
 2. Open the project in an IDE (Eclipse, IntelliJ, or VS Code)
 
-3. Run:
-
-BioreactorApp.java
+3. Run: BioreactorApp.java
 
 ---
 
