@@ -60,4 +60,5 @@ public class BioreactorModel {
     public double getProduct() {
         return product;
     }
+
 }
