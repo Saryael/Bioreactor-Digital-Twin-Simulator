@@ -45,12 +45,12 @@ Environmental factors such as **temperature** and **oxygen concentration** modif
 
 ## Project Structure
 src/
-├── BioReactorSim/
-├── BioreactorApp.java
-├── BioreactorGUI.java
-├── BioreactorModel.java
-├── SimulationEngine.java
-├── GraphPanel.java
+> BioReactorSim/
+- BioreactorApp.java
+- BioreactorGUI.java
+- BioreactorModel.java
+- SimulationEngine.java
+- GraphPanel.java
 
 
 ---
