@@ -3,102 +3,13 @@ package BioReactorSim;
 import javax.swing.*;
 import java.awt.*;
 
-/*public class BioreactorGUI extends JFrame {
-
-    private JLabel biomassLabel;
-    private JLabel substrateLabel;
-    private JLabel productLabel;
-    private JLabel timeLabel;
-    private JTextField biomassInput;
-    private JTextField substrateInput;
-
-    private SimulationEngine engine;
-    private Timer timer;
-
-    public BioreactorGUI() {
-
-        BioreactorModel model = new BioreactorModel(0.1, 20.0);
-        engine = new SimulationEngine(model, 0.1);
-
-        setTitle("Bioreactor Digital Twin Simulator");
-        setSize(400,300);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLayout(new GridLayout(6,1));
-
-        timeLabel = new JLabel();
-        biomassLabel = new JLabel();
-        substrateLabel = new JLabel();
-        productLabel = new JLabel();
-
-        add(timeLabel);
-        add(biomassLabel);
-        add(substrateLabel);
-        add(productLabel);
-        
-        JPanel inputPanel = new JPanel();
-
-        biomassInput = new JTextField("0.1", 5);
-        substrateInput = new JTextField("20", 5);
-
-        inputPanel.add(new JLabel("Initial Biomass:"));
-        inputPanel.add(biomassInput);
-
-        inputPanel.add(new JLabel("Initial Substrate:"));
-        inputPanel.add(substrateInput);
-
-        add(inputPanel);
-        
-        JPanel buttonPanel = new JPanel();
-
-        JButton startButton = new JButton("Start");
-        JButton stopButton = new JButton("Stop");
-        JButton resetButton = new JButton("Reset");
-
-        buttonPanel.add(startButton);
-        buttonPanel.add(stopButton);
-        buttonPanel.add(resetButton);
-
-        add(buttonPanel);
-
-        timer = new Timer(500, e -> updateSimulation());
-
-        startButton.addActionListener(e -> timer.start());
-        stopButton.addActionListener(e -> timer.stop());
-
-        resetButton.addActionListener(e -> {
-            timer.stop();
-            engine = new SimulationEngine(new BioreactorModel(0.1,20.0),0.1);
-            updateLabels();
-        });
-
-        updateLabels();
-
-        setVisible(true);
-    }
-
-    private void updateSimulation() {
-        engine.update();
-        updateLabels();
-    }
-
-    private void updateLabels() {
-
-        BioreactorModel reactor = engine.getReactor();
-
-        timeLabel.setText("Time: " + engine.getTime() + " hr");
-        biomassLabel.setText("Biomass: " + reactor.getBiomass() + " g/L");
-        substrateLabel.setText("Substrate: " + reactor.getSubstrate() + " g/L");
-        productLabel.setText("Product: " + reactor.getProduct() + " g/L");
-    }
-}*/
-
-
 public class BioreactorGUI extends JFrame {
 
     private JLabel biomassLabel;
     private JLabel substrateLabel;
     private JLabel productLabel;
     private JLabel timeLabel;
+    private JLabel phaseLabel;
 
     private JTextField biomassInput;
     private JTextField substrateInput;
@@ -113,11 +24,12 @@ public class BioreactorGUI extends JFrame {
     private Timer timer;
 
     private GraphPanel graph;
+    private ReactorAnimationPanel reactorPanel;
 
     public BioreactorGUI() {
 
         setTitle("Bioreactor Digital Twin Simulator");
-        setSize(600,500);
+        setSize(800,550);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
@@ -139,11 +51,18 @@ public class BioreactorGUI extends JFrame {
         add(inputPanel, BorderLayout.NORTH);
 
         // ------------------------
-        // CENTER PANEL (graph)
+        // CENTER PANEL (graph + reactor)
         // ------------------------
 
+        JPanel centerPanel = new JPanel(new GridLayout(1,2));
+
         graph = new GraphPanel();
-        add(graph, BorderLayout.CENTER);
+        reactorPanel = new ReactorAnimationPanel();
+
+        centerPanel.add(graph);
+        centerPanel.add(reactorPanel);
+
+        add(centerPanel, BorderLayout.CENTER);
 
         // ------------------------
         // RIGHT PANEL (controls)
@@ -167,26 +86,26 @@ public class BioreactorGUI extends JFrame {
         add(controlPanel, BorderLayout.EAST);
 
         // ------------------------
-        // BOTTOM PANEL (status)
+        // STATUS PANEL
         // ------------------------
 
         JPanel statusPanel = new JPanel();
-        statusPanel.setLayout(new GridLayout(4,1));
+        statusPanel.setLayout(new GridLayout(5,1));
 
         timeLabel = new JLabel();
         biomassLabel = new JLabel();
         substrateLabel = new JLabel();
         productLabel = new JLabel();
+        phaseLabel = new JLabel("Phase: ");
 
         statusPanel.add(timeLabel);
         statusPanel.add(biomassLabel);
         statusPanel.add(substrateLabel);
         statusPanel.add(productLabel);
-
-        add(statusPanel, BorderLayout.WEST);
+        statusPanel.add(phaseLabel);
 
         // ------------------------
-        // BUTTONS
+        // BUTTON PANEL
         // ------------------------
 
         JPanel buttonPanel = new JPanel();
@@ -199,7 +118,16 @@ public class BioreactorGUI extends JFrame {
         buttonPanel.add(stopButton);
         buttonPanel.add(resetButton);
 
-        add(buttonPanel, BorderLayout.SOUTH);
+        // ------------------------
+        // COMBINED BOTTOM PANEL
+        // ------------------------
+
+        JPanel bottomPanel = new JPanel(new BorderLayout());
+
+        bottomPanel.add(statusPanel, BorderLayout.CENTER);
+        bottomPanel.add(buttonPanel, BorderLayout.SOUTH);
+
+        add(bottomPanel, BorderLayout.SOUTH);
 
         // ------------------------
         // SLIDER EVENTS
@@ -214,10 +142,10 @@ public class BioreactorGUI extends JFrame {
                         oxygenSlider.getValue() + " %"));
 
         // ------------------------
-        // TIMER
+        // TIMER (SMOOTH ANIMATION)
         // ------------------------
 
-        timer = new Timer(500, e -> updateSimulation());
+        timer = new Timer(30, e -> updateSimulation());
 
         // ------------------------
         // BUTTON ACTIONS
@@ -267,6 +195,7 @@ public class BioreactorGUI extends JFrame {
 
             engine = new SimulationEngine(
                     new BioreactorModel(0.1,20),0.1);
+            reactorPanel.resetAnimation();
 
             updateLabels();
 
@@ -275,13 +204,21 @@ public class BioreactorGUI extends JFrame {
         setVisible(true);
     }
 
-    private void updateSimulation() {
+    private void updateSimulation(){
+
+        if(engine == null) return;
 
         engine.update();
 
         BioreactorModel reactor = engine.getReactor();
 
+        // 🔥 REAL-TIME CONTROL
+        reactor.setTemperature(temperatureSlider.getValue());
+        reactor.setOxygen(oxygenSlider.getValue());
+
         graph.addPoint(reactor.getBiomass());
+
+        reactorPanel.updateBiomass(reactor.getBiomass());
 
         updateLabels();
     }
@@ -293,15 +230,17 @@ public class BioreactorGUI extends JFrame {
         BioreactorModel reactor = engine.getReactor();
 
         timeLabel.setText("Time: " +
-                engine.getTime() + " hr");
+                String.format("%.2f", engine.getTime()) + " hr");
 
         biomassLabel.setText("Biomass: " +
-                reactor.getBiomass() + " g/L");
+                String.format("%.2f", reactor.getBiomass()) + " g/L");
 
         substrateLabel.setText("Substrate: " +
-                reactor.getSubstrate() + " g/L");
+                String.format("%.2f", reactor.getSubstrate()) + " g/L");
 
         productLabel.setText("Product: " +
-                reactor.getProduct() + " g/L");
+                String.format("%.2f", reactor.getProduct()) + " g/L");
+
+        phaseLabel.setText("Phase: " + engine.getPhase());
     }
 }
