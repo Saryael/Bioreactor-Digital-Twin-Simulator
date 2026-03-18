@@ -23,4 +23,14 @@ public class SimulationEngine {
     public BioreactorModel getReactor() {
         return reactor;
     }
+    
+    public String getPhase(){
+
+        double t = time;
+
+        if(t < 2) return "Lag Phase";
+        else if(t < 10) return "Exponential Growth";
+        else if(t < 18) return "Stationary Phase";
+        else return "Death Phase";
+    }
 }
